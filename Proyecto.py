@@ -30,13 +30,13 @@ class Controller(pyglet.window.Window):
 
 controller = Controller(width=1280, height=720)
 
-glClearColor(0.15, 0.15, 0.15, 1.0)
+glClearColor(0.6, 1, 1, 1)
 
 pipeline = es.SimpleTransformShaderProgram()
 controller.pipeline = pipeline
 glUseProgram(pipeline.shaderProgram)
 
-def createVerySpecificTriangle(x1,y1,z1,x2,y2,z2,x3,y3,z3,r1, g1, b1,r2, g2, b2,r3, g3, b3):
+def createSpecificTriangle(x1,y1,z1,x2,y2,z2,x3,y3,z3,r1, g1, b1,r2, g2, b2,r3, g3, b3):
   
     vertices = [
         x1, y1, z1,  r1, g1, b1,
@@ -47,17 +47,46 @@ def createVerySpecificTriangle(x1,y1,z1,x2,y2,z2,x3,y3,z3,r1, g1, b1,r2, g2, b2,
 
     return Shape(vertices, indices)
 
-alaDerSup = HighLevelGPUShape(pipeline, createVerySpecificTriangle(0.0,0.0,0.0,  0.47,0.356,0.0,  0.3,0.0,0.0,  0.990, 0.735, 0.139,  1, 0.3, 0.0,  0.990, 0.735, 0.139))
+def createSpecificQuad(x1,y1,z1,x2,y2,z2,x3,y3,z3,x4,y4,z4,r1, g1, b1,r2,g2,b2,r3,g3,b3,r4,g4,b4):
 
-alaDerInf = HighLevelGPUShape(pipeline, createVerySpecificTriangle(0.0,0.0,0.0,  0.361,-0.325,0.0,  0.3,0.0,0.0,  0.15,0.0,0.2,  0.15,0.0,0.2,  0.15,0.0,0.2))
+    # Defining locations and colors for each vertex of the shape    
+    vertices = [
+    #   positions        colors
+        x1, y1, z1,  r1, g1, b1,
+        x2, y2, z2,  r2, g2, b2,
+        x3, y3, z3,  r3, g3, b3,
+        x4, y4, z4,  r4, g4, b4]
 
-alaIzqSup = HighLevelGPUShape(pipeline, createVerySpecificTriangle(0.0,0.0,0.0,  -0.47,0.356,0.0,  -0.3,0.0,0.0,  0.15,0.0,0.2,  0.15,0.0,0.2,  0.15,0.0,0.2))
+    # Defining connections among vertices
+    # We have a triangle every 3 indices specified
+    indices = [
+         0, 1, 2,
+         2, 3, 0]
 
-alaIzqInf = HighLevelGPUShape(pipeline, createVerySpecificTriangle(0.0,0.0,0.0,  -0.361,-0.325,0.0,  -0.3,0.0,0.0,  0.15,0.0,0.2,  0.15,0.0,0.2,  0.15,0.0,0.2))
+    return Shape(vertices, indices)
+
+
+alaDerSup = HighLevelGPUShape(pipeline, createSpecificTriangle(0.0,0.0,0.0,  0.321,0.367,0.0,  0.3,0.0,0.0,  1, 0.3, 0.1,  1, 0.6, 0.0,  1, 0.4, 0.1))
+
+alaDerInf = HighLevelGPUShape(pipeline, createSpecificTriangle(0.0,0.0,0.0,  0.193,-0.35,0.0,  0.3,0.0,0.0,  1, 0.3, 0.1,  1, 0.6, 0.0,  1, 0.4, 0.1))
+
+alaIzqSup = HighLevelGPUShape(pipeline, createSpecificTriangle(0.0,0.0,0.0,  -0.321,0.367,0.0,  -0.3,0.0,0.0,  1, 0.3, 0.1,  1, 0.6, 0.0,  1, 0.4, 0.1))
+
+alaIzqInf = HighLevelGPUShape(pipeline, createSpecificTriangle(0.0,0.0,0.0,  -0.193,-0.35,0.0,  -0.3,0.0,0.0,  1, 0.3, 0.1,  1, 0.6, 0.0,  1, 0.4, 0.1))
+
+cuerpo = HighLevelGPUShape(pipeline, createSpecificQuad(-0.05,0.2,0.0,  0.05,0.2,0.0,  0.05,-0.2,0.0,  -0.05,-0.2,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0))
+
+antenaIzq= HighLevelGPUShape(pipeline,createSpecificQuad(-0.095,0.255,0.0,  -0.085,0.265,0.0,  -0.04,0.2,0.0,  -0.05,0.19,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0))
+
+antenaDer= HighLevelGPUShape(pipeline,createSpecificQuad(0.095,0.255,0.0,  0.085,0.265,0.0,  0.04,0.2,0.0,  0.05,0.19,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0))
+
 
 def drawTriangle(controller: Controller, triangle):
     triangle.draw(controller.pipeline)
 
+def drawQuad(controller: Controller, quad):
+    quad.draw(controller.pipeline)
+    
 def update(dt, controller):
     controller.total_time += dt
     controller.trianglePosX += controller.triangleSpeed * dt
@@ -74,10 +103,15 @@ def on_draw():
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
     
     # Dibuja las figuras
-    drawTriangle(controller,alaDerSup)
+    alaDerSup.draw(controller.pipeline)
+    
     drawTriangle(controller,alaDerInf)
     drawTriangle(controller,alaIzqInf)
     drawTriangle(controller,alaIzqSup)
+    drawQuad(controller,cuerpo)
+    drawQuad(controller,antenaIzq)  
+    drawQuad(controller,antenaDer)  
+        
 
 # Try to call this function 60 times per second
 pyglet.clock.schedule(update, controller)
