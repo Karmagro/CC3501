@@ -2,6 +2,7 @@ import pyglet
 from OpenGL.GL import *
 
 from math import cos, sin
+from random import random,seed
 
 from grafica import basic_shapes as bs
 from grafica import easy_shaders as es
@@ -19,14 +20,17 @@ class Shape:
 
 class Controller(pyglet.window.Window):
 
-    def __init__(self, width, height, title="Auxiliar 2"):
-        super().__init__(width, height, title)
+    def __init__(self, width, height, title="Tarea 1: Mariposa que se mueve y aletea", resizable=True):
+        super().__init__(width, height, title,resizable)
         self.total_time = 0.0
         self.fillPolygon = True
         self.pipeline = None
         self.repeats = 0
-        self.triangleSpeed = 0
-        self.trianglePosX = 0
+        self.mariposaSpeedX = 0
+        self.mariposaSpeedY = 0
+        self.mariposaPosX = 0
+        self.mariposaPosY = 0
+        self.mariposaPosZ = 0
 
 controller = Controller(width=1280, height=720)
 
@@ -74,22 +78,78 @@ alaIzqSup = HighLevelGPUShape(pipeline, createSpecificTriangle(0.0,0.0,0.0,  -0.
 
 alaIzqInf = HighLevelGPUShape(pipeline, createSpecificTriangle(0.0,0.0,0.0,  -0.193,-0.35,0.0,  -0.3,0.0,0.0,  1, 0.3, 0.1,  1, 0.6, 0.0,  1, 0.4, 0.1))
 
-cuerpo = HighLevelGPUShape(pipeline, createSpecificQuad(-0.05,0.2,0.0,  0.05,0.2,0.0,  0.05,-0.2,0.0,  -0.05,-0.2,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0))
+#cuerpo = HighLevelGPUShape(pipeline, createSpecificQuad(-0.05,0.2,0.0,  0.05,0.2,0.0,  0.05,-0.2,0.0,  -0.05,-0.2,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0))
 
-antenaIzq= HighLevelGPUShape(pipeline,createSpecificQuad(-0.095,0.255,0.0,  -0.085,0.265,0.0,  -0.04,0.2,0.0,  -0.05,0.19,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0))
+cuerpo = HighLevelGPUShape(pipeline, createSpecificQuad(-0.03,0.2,0.0,  0.03,0.2,0.0,  0.03,-0.25,0.0,  -0.03,-0.25,0.0,  0,0,0,  0,0,0,  0,0,0, 0,0,0))
 
-antenaDer= HighLevelGPUShape(pipeline,createSpecificQuad(0.095,0.255,0.0,  0.085,0.265,0.0,  0.04,0.2,0.0,  0.05,0.19,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0,  0.6,0.3,0.0))
+antenaIzq= HighLevelGPUShape(pipeline,createSpecificQuad(-0.095,0.275,0.0,  -0.085,0.285,0.0,  -0.02,0.2,0.0,  -0.03,0.19,0.0,  0,0,0,  0,0,0,  0,0,0, 0,0,0))
+
+antenaDer= HighLevelGPUShape(pipeline,createSpecificQuad(0.095,0.275,0.0,  0.085,0.285,0.0,  0.02,0.2,0.0,  0.03,0.19,0.0,  0,0,0,  0,0,0,  0,0,0, 0,0,0))
 
 
-def drawTriangle(controller: Controller, triangle):
-    triangle.draw(controller.pipeline)
+mariposa= [alaDerSup,alaDerInf,alaIzqSup,alaIzqInf,cuerpo,antenaDer,antenaIzq]
 
-def drawQuad(controller: Controller, quad):
-    quad.draw(controller.pipeline)
+def draw_moving_mariposa(controller: Controller):
+
+    for parte in mariposa:
+        parte._transform = tr.matmul([tr.translate(controller.mariposaPosX, controller.mariposaPosY, 0),
+                                      tr.uniformScale(1)])
+        parte.draw(controller.pipeline)
+
+
+def draw_enjambre(controller: Controller):
+    i=0
+    rutinas = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
+    while i<10:
+        for parte in mariposa:
+                parte._transform = tr.identity()  # Make the transform neutral again
+                parte.rotation = tr.rotationZ(controller.total_time*rutinas[i])
+                parte.translation = tr.translate(controller.total_time%1,(controller.total_time%1)*controller.mariposaSpeedY,0)
+                parte.scale = tr.uniformScale(0.3)
+                parte.draw(controller.pipeline)
+        i+=1
+
+@controller.event
+def on_key_press(symbol, modifiers):
+    controller.mariposaSpeedX = 0
+    controller.mariposaSpeedY = 0
+    
+
+    if symbol == pyglet.window.key.SPACE:
+        controller.fillPolygon = not controller.fillPolygon
+    elif symbol == pyglet.window.key.ESCAPE:
+        controller.close()
+    
+    elif symbol == pyglet.window.key.LEFT:
+        controller.mariposaSpeedX -= 1
+
+    elif symbol == pyglet.window.key.RIGHT:
+        controller.mariposaSpeedX += 1
+
+    elif symbol == pyglet.window.key.DOWN:
+        controller.mariposaSpeedY -= 1
+
+    elif symbol == pyglet.window.key.UP:
+        controller.mariposaSpeedY += 1
+
+@controller.event
+def on_key_release(symbol, modifiers):
+    if symbol == pyglet.window.key.LEFT:
+        controller.mariposaSpeedX = 0
+
+    elif symbol == pyglet.window.key.RIGHT:
+        controller.mariposaSpeedX = 0
+    
+    elif symbol == pyglet.window.key.DOWN:
+        controller.mariposaSpeedY = 0
+
+    elif symbol == pyglet.window.key.UP:
+        controller.mariposaSpeedY = 0
     
 def update(dt, controller):
     controller.total_time += dt
-    controller.trianglePosX += controller.triangleSpeed * dt
+    controller.mariposaPosX += controller.mariposaSpeedX * dt
+    controller.mariposaPosY += controller.mariposaSpeedY * dt
 
 
 @controller.event
@@ -103,15 +163,8 @@ def on_draw():
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
     
     # Dibuja las figuras
-    alaDerSup.draw(controller.pipeline)
-    
-    drawTriangle(controller,alaDerInf)
-    drawTriangle(controller,alaIzqInf)
-    drawTriangle(controller,alaIzqSup)
-    drawQuad(controller,cuerpo)
-    drawQuad(controller,antenaIzq)  
-    drawQuad(controller,antenaDer)  
-        
+    draw_moving_mariposa(controller)
+    draw_enjambre(controller)    
 
 # Try to call this function 60 times per second
 pyglet.clock.schedule(update, controller)
