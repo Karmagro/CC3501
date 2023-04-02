@@ -31,6 +31,7 @@ class Controller(pyglet.window.Window):
         self.mariposaPosX = 0
         self.mariposaPosY = 0
         self.mariposaPosZ = 0
+        self.enjambreSpeed= 1
 
 controller = Controller(width=1280, height=720)
 
@@ -86,27 +87,47 @@ antenaIzq= HighLevelGPUShape(pipeline,createSpecificQuad(-0.095,0.275,0.0,  -0.0
 
 antenaDer= HighLevelGPUShape(pipeline,createSpecificQuad(0.095,0.275,0.0,  0.085,0.285,0.0,  0.02,0.2,0.0,  0.03,0.19,0.0,  0,0,0,  0,0,0,  0,0,0, 0,0,0))
 
+ojoIzq= HighLevelGPUShape(pipeline,createSpecificQuad(-0.02,0.19,0.0,  -0.01,0.19,0.0,  -0.01,0.16,0.0,  -0.02,0.16,0.0,  1,0.1,0.7,  1,0.1,0.7,  1,0.1,0.7, 1,0.1,0.7))
 
-mariposa= [alaDerSup,alaDerInf,alaIzqSup,alaIzqInf,cuerpo,antenaDer,antenaIzq]
+ojoDer= HighLevelGPUShape(pipeline,createSpecificQuad(0.01,0.19,0.0, 0.02,0.19,0.0,    0.02,0.16,0.0,  0.01,0.16,0.0,  1,0.1,0.7,  1,0.1,0.7,  1,0.1,0.7, 1,0.1,0.7))
+
+mariposa= [alaDerSup,alaDerInf,alaIzqSup,alaIzqInf,cuerpo,antenaDer,antenaIzq,ojoIzq,ojoDer]
 
 def draw_moving_mariposa(controller: Controller):
 
     for parte in mariposa:
-        parte._transform = tr.matmul([tr.translate(controller.mariposaPosX, controller.mariposaPosY, 0),
-                                      tr.uniformScale(1)])
+        if parte==alaDerSup or parte==alaDerInf or parte==alaIzqInf or parte==alaIzqSup:
+            parte._transform = tr.matmul([tr.translate(controller.mariposaPosX, controller.mariposaPosY, 0),
+                                        tr.uniformScale(0.3+controller.total_time%0.7)])
+        else:
+            parte._transform = tr.matmul([tr.translate(controller.mariposaPosX, controller.mariposaPosY, 0),
+                                        tr.uniformScale(1)])
         parte.draw(controller.pipeline)
 
 
 def draw_enjambre(controller: Controller):
     i=0
-    rutinas = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
-    while i<10:
+    rutina = [[0.4*cos(controller.total_time),-0.4*sin(controller.total_time),0.0],
+              [-0.9*cos(controller.total_time),0.9*sin(controller.total_time),0.0],
+              [0.5*cos(controller.total_time),0.5*sin(controller.total_time),0.0],
+              [-0.7*cos(controller.total_time),-0.7*sin(controller.total_time),0.0],
+              [1*cos(controller.total_time),-1*sin(controller.total_time),0.0]]
+    while i<5:
         for parte in mariposa:
-                parte._transform = tr.identity()  # Make the transform neutral again
-                parte.rotation = tr.rotationZ(controller.total_time*rutinas[i])
-                parte.translation = tr.translate(controller.total_time%1,(controller.total_time%1)*controller.mariposaSpeedY,0)
-                parte.scale = tr.uniformScale(0.3)
-                parte.draw(controller.pipeline)
+                seed(i)
+                if parte==alaDerSup or parte==alaDerInf or parte==alaIzqInf or parte==alaIzqSup:
+                    parte._transform = tr.identity()  # Make the transform neutral again
+                    parte.rotation = tr.rotationZ(controller.total_time*random()*2)
+                    parte.translation = tr.translate(rutina[i][0],rutina[i][1],rutina[i][2])
+                    parte.scale = tr.uniformScale(0.1 + controller.total_time%0.2)
+                    parte.draw(controller.pipeline)
+
+                else:
+                    parte._transform = tr.identity()  # Make the transform neutral again
+                    parte.rotation = tr.rotationZ(controller.total_time*random()*2)
+                    parte.translation = tr.translate(rutina[i][0],rutina[i][1],rutina[i][2])
+                    parte.scale = tr.uniformScale(0.3)
+                    parte.draw(controller.pipeline)            
         i+=1
 
 @controller.event
