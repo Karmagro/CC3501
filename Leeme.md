@@ -8,3 +8,7 @@ las cuales tienen un movimiento propio dependiente del tiempo (rotacion, traslac
 Siguiendo con las mariposas, estas estan compuestas de varios triangulos y cuadrangulos, me guie de las basic_shapes para crear funciones que recibieran las 3 posiciones (x,y,z) ademas de los colores para cada vertice, esto lo aproveche para darles colores distintos a los vertices dandole un gradiente a la mariposa. Las partes las puse en una lista llamada mariposa en la cual luego itero para darle el movimiento descrito anteriormente.
 
 En general mi tarea hace todo lo que se pide que haga ademas de lo extra (el enjambre, movimientos, ilusion de aleteo, cambio de color de pantalla..), considerando lo que no hace mi mariposa podria tenerse en cuenta que no agregue transformaciones del tipo shearing, o que no hice nada demasiado alejado de lo que se pidio.
+
+## Consideraciones para correr el codigo
+
+Mi codigo utiliza todas las librerias y modulos del curso, pero adicionalmente hago uso de "noise", en el caso de mi ordenador fue algo complicado instalarlo (lo tuve que descargar como archivo .whl desde <https://www.lfd.uci.edu/~gohlke/pythonlibs/#noise> , la version noise-1.2.3-cp311-cp311-win_amd64)
